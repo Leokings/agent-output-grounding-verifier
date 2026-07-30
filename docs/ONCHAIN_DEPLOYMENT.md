@@ -85,6 +85,14 @@ repository intentionally contains one numbered deployment script.
 Bradbury is the persistent production-like GenLayer testnet. Switch networks,
 copy the account address, and fund it using the official faucet:
 
+The deployment script enforces a conservative 50,000-byte combined limit for
+the contract source and constructor input before it initializes consensus or
+submits a transaction. As of July 2026, Bradbury's RPC rejects consensus-call
+calldata above 53,248 bytes with `BlockPubdataLimitReached`; message and ABI
+encoding also consume part of that allowance. The combined limit leaves
+explicit headroom and prevents the CLI from masking an oversized payload behind
+its 200,000-gas fallback.
+
 ```powershell
 genlayer.cmd network set testnet-bradbury
 genlayer.cmd network info

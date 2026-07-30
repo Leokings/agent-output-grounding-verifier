@@ -13,6 +13,7 @@ const CONTRACT_PATH = path.resolve(
   "contracts",
   "AgentOutputGroundingVerifier.py",
 );
+export const MAX_PORTABLE_DEPLOYMENT_INPUT_BYTES = 50_000;
 
 const STATUS_NAMES = new Map([
   [5, "ACCEPTED"],
@@ -43,6 +44,19 @@ function jsonString(value) {
     (_key, item) => (typeof item === "bigint" ? item.toString() : item),
     2,
   );
+}
+
+export function assertPortableDeploymentInput(contractCode, constructorInput) {
+  const contractSourceBytes = Buffer.byteLength(contractCode, "utf8");
+  const constructorInputBytes = Buffer.byteLength(constructorInput, "utf8");
+  const deploymentInputBytes = contractSourceBytes + constructorInputBytes;
+  if (deploymentInputBytes > MAX_PORTABLE_DEPLOYMENT_INPUT_BYTES) {
+    throw new Error(
+      `Contract source plus constructor input is ${deploymentInputBytes} bytes; ` +
+        `the portable deployment limit is ${MAX_PORTABLE_DEPLOYMENT_INPUT_BYTES} bytes`,
+    );
+  }
+  return { contractSourceBytes, deploymentInputBytes };
 }
 
 function envInteger(name, fallback, minimum = 1) {
@@ -463,6 +477,8 @@ export default async function deployAndSmoke(client) {
   if (!contractCode.trim()) {
     throw new Error(`Contract is empty: ${CONTRACT_PATH}`);
   }
+  const { contractSourceBytes, deploymentInputBytes } =
+    assertPortableDeploymentInput(contractCode, allowedDomainsJson);
 
   await client.initializeConsensusSmartContract();
   const deploymentHash = await client.deployContract({
@@ -606,6 +622,8 @@ export default async function deployAndSmoke(client) {
     contract_sha256: createHash("sha256")
       .update(contractCode, "utf8")
       .digest("hex"),
+    contract_source_bytes: contractSourceBytes,
+    deployment_input_bytes: deploymentInputBytes,
     contract_address: contractAddress,
     deployment_transaction: deploymentHash,
     verification_transaction: verificationHash,

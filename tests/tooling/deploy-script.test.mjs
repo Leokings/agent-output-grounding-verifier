@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
-import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import test from "node:test";
 
 import deployAndSmoke, {
+  assertPortableDeploymentInput,
   assertPositiveReceipt,
+  MAX_PORTABLE_DEPLOYMENT_INPUT_BYTES,
 } from "../../deploy/001_deploy_and_smoke.js";
 
 const CONTRACT_ADDRESS = "0x1111111111111111111111111111111111111111";
@@ -12,6 +14,29 @@ const VERIFICATION_HASH = `0x${"b".repeat(64)}`;
 const STUDIO_RPC = "https://studio.example/api";
 const BRADBURY_RPC = "https://rpc-bradbury.genlayer.com";
 const ASIMOV_RPC = "https://rpc-asimov.genlayer.com";
+
+test("contract source stays within the portable deployment limit", () => {
+  const source = readFileSync(
+    new URL("../../contracts/AgentOutputGroundingVerifier.py", import.meta.url),
+    "utf8",
+  );
+  assert.ok(
+    Buffer.byteLength(source, "utf8") <=
+      MAX_PORTABLE_DEPLOYMENT_INPUT_BYTES,
+  );
+});
+
+test("portable deployment limit includes constructor input", () => {
+  const source = "x".repeat(MAX_PORTABLE_DEPLOYMENT_INPUT_BYTES - 2);
+  assert.deepEqual(assertPortableDeploymentInput(source, "[]"), {
+    contractSourceBytes: MAX_PORTABLE_DEPLOYMENT_INPUT_BYTES - 2,
+    deploymentInputBytes: MAX_PORTABLE_DEPLOYMENT_INPUT_BYTES,
+  });
+  assert.throws(
+    () => assertPortableDeploymentInput(source, "[1]"),
+    /source plus constructor input.*portable deployment limit/,
+  );
+});
 
 function mockChain(id, name, rpcUrl) {
   return {
