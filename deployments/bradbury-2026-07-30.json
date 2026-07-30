@@ -1,0 +1,78 @@
+{
+  "record_version": "1",
+  "recorded_at": "2026-07-30T17:59:06.6512847Z",
+  "provisional": true,
+  "status": "ACCEPTED",
+  "network": {
+    "name": "GenLayer Bradbury Testnet",
+    "alias": "testnet-bradbury",
+    "chain_id": 4221,
+    "rpc_url": "https://rpc-bradbury.genlayer.com",
+    "explorer_url": "https://explorer-bradbury.genlayer.com/",
+    "rollup_explorer_url": "https://zksync-os-testnet-genlayer.explorer.zksync.dev/"
+  },
+  "source": {
+    "repository": "https://github.com/Leokings/agent-output-grounding-verifier",
+    "commit": "b95bc1f8a7c41a2c880b7da8fbeef2247cd1a99f",
+    "contract_path": "contracts/AgentOutputGroundingVerifier.py",
+    "sha256": "9edcde9acd1f9206a9bd4ef4b9f491a4d39ece605597c109f3172ba7916c2d33",
+    "contract_source_bytes": 47033,
+    "constructor_input_bytes": 15,
+    "deployment_input_bytes": 47048,
+    "serialized_payload_bytes": 47064,
+    "evm_calldata_bytes": 47300,
+    "exact_deployed_code_match": true
+  },
+  "contract": {
+    "address": "0xb08773A551302B816F6bF3cce914D266b5C1a461",
+    "version": "1.0.0",
+    "policy_version": "GROUNDING_V1",
+    "scope": "CITATION_GROUNDING_ONLY",
+    "allowed_domains_json": "[\"example.com\"]",
+    "schema_match": true
+  },
+  "deployment": {
+    "genlayer_transaction": "0xfef6e10039fbf21ee3cc16d0b376d1f3d41ee8a41e66066c3439aa2c2561ee37",
+    "evm_transaction": "0xd8148b154744360a74686c1c659f97d5432fe37a77223816486dc6d4f7c549e2",
+    "evm_block": "0xf4dfd6",
+    "status": "ACCEPTED",
+    "result": "AGREE",
+    "execution_result": "FINISHED_WITH_RETURN",
+    "validator_summary": {
+      "total": 5,
+      "agree": 4,
+      "timeout": 1
+    },
+    "last_vote_timestamp": 1785433745,
+    "finality_not_before": "2026-07-30T18:19:05Z"
+  },
+  "smoke_test": {
+    "genlayer_transaction": "0x7e72eb0d3673b4e7fde739437c21931009751dc9b3129b3921285b5ad8ed00ba",
+    "evm_transaction": "0xe681d713a0f5177d601583ac73a19107b19671a070f8596459c068bbfd30aab1",
+    "evm_block": "0xf4e137",
+    "status": "ACCEPTED",
+    "result": "AGREE",
+    "execution_result": "FINISHED_WITH_RETURN",
+    "validator_summary": {
+      "total": 5,
+      "agree": 5,
+      "timeout": 0
+    },
+    "last_vote_timestamp": 1785433932,
+    "finality_not_before": "2026-07-30T18:22:12Z",
+    "verification_id": 1,
+    "claim": "This domain is for use in illustrative examples in documents.",
+    "source_urls_json": "[\"https://example.com/\"]",
+    "verdict": "SUPPORTED",
+    "reason_code": "CITED_EVIDENCE_ENTAILS_CLAIM",
+    "evidence_excerpt": "This domain is for use in documentation examples without needing permission.",
+    "claim_digest": "7ca04a789b73fa470069208a9128681a4ba23c968478fbc5d8788c7f12314dbe",
+    "request_digest": "fcefb0edb59f4d739160155e591d326358c826bde2ad9b8c024e645bc2a24096"
+  },
+  "state_verification": {
+    "initial_verification_count": 0,
+    "final_verification_count": 1,
+    "verification_read_back": true
+  },
+  "finality_note": "ACCEPTED is provisional during GenLayer's appeal window. Re-check both GenLayer transaction statuses before treating this record as finalized."
+}
