@@ -781,7 +781,10 @@ def test_transient_source_failure_does_not_create_a_durable_verdict(
         (
             "A valid claim.",
             ("[" * 3_000) + "0" + ("]" * 3_000),
-            "JSON array",
+            # CPython's JSON scanner may reject this at its recursion limit or
+            # parse far enough for the contract's item-type check. Both safe
+            # paths identify the rejected input as source_urls.
+            "source_urls",
         ),
     ],
 )
