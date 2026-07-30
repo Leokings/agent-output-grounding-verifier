@@ -33,6 +33,7 @@ function positiveReceipt(extra = {}) {
 test("deployment tooling preserves JSON strings and verifies stored state", async () => {
   const envNames = [
     "GROUNDING_EXPECTED_CHAIN_ID",
+    "GROUNDING_EXPECTED_NETWORK_NAME",
     "GROUNDING_ALLOWED_DOMAINS_JSON",
     "GROUNDING_SMOKE_SOURCE_URLS_JSON",
     "GROUNDING_SMOKE_CLAIM",
@@ -45,6 +46,7 @@ test("deployment tooling preserves JSON strings and verifies stored state", asyn
   );
 
   process.env.GROUNDING_EXPECTED_CHAIN_ID = "61999";
+  process.env.GROUNDING_EXPECTED_NETWORK_NAME = "Mock GenLayer";
   process.env.GROUNDING_ALLOWED_DOMAINS_JSON =
     '["STATUS.Example.com","Docs.Example.com"]';
   process.env.GROUNDING_SMOKE_SOURCE_URLS_JSON =
@@ -184,6 +186,7 @@ test("receipt validation fails closed on rejected consensus", () => {
 test("chain mismatch fails before any network mutation", async () => {
   const envNames = [
     "GROUNDING_EXPECTED_CHAIN_ID",
+    "GROUNDING_EXPECTED_NETWORK_NAME",
     "GROUNDING_ALLOWED_DOMAINS_JSON",
     "GROUNDING_SMOKE_SOURCE_URLS_JSON",
     "GROUNDING_SMOKE_CLAIM",
@@ -194,6 +197,7 @@ test("chain mismatch fails before any network mutation", async () => {
     envNames.map((name) => [name, process.env[name]]),
   );
   process.env.GROUNDING_EXPECTED_CHAIN_ID = "4221";
+  process.env.GROUNDING_EXPECTED_NETWORK_NAME = "Mock Bradbury";
   process.env.GROUNDING_ALLOWED_DOMAINS_JSON = '["example.com"]';
   process.env.GROUNDING_SMOKE_SOURCE_URLS_JSON =
     '["https://example.com/"]';
@@ -231,9 +235,63 @@ test("chain mismatch fails before any network mutation", async () => {
   }
 });
 
+test("network mismatch fails before mutation even when chain IDs match", async () => {
+  const envNames = [
+    "GROUNDING_EXPECTED_CHAIN_ID",
+    "GROUNDING_EXPECTED_NETWORK_NAME",
+    "GROUNDING_ALLOWED_DOMAINS_JSON",
+    "GROUNDING_SMOKE_SOURCE_URLS_JSON",
+    "GROUNDING_SMOKE_CLAIM",
+    "GROUNDING_SMOKE_EXPECTED_VERDICT",
+    "GROUNDING_DEPLOYMENT_OUTPUT",
+  ];
+  const previous = Object.fromEntries(
+    envNames.map((name) => [name, process.env[name]]),
+  );
+  process.env.GROUNDING_EXPECTED_CHAIN_ID = "4221";
+  process.env.GROUNDING_EXPECTED_NETWORK_NAME =
+    "Genlayer Bradbury Testnet";
+  process.env.GROUNDING_ALLOWED_DOMAINS_JSON = '["example.com"]';
+  process.env.GROUNDING_SMOKE_SOURCE_URLS_JSON =
+    '["https://example.com/"]';
+  process.env.GROUNDING_SMOKE_CLAIM = "A sufficiently long atomic claim.";
+  process.env.GROUNDING_SMOKE_EXPECTED_VERDICT = "SUPPORTED";
+  delete process.env.GROUNDING_DEPLOYMENT_OUTPUT;
+
+  let initialized = false;
+  let deployed = false;
+  const client = {
+    chain: { id: 4221, name: "Genlayer Asimov Testnet" },
+    async initializeConsensusSmartContract() {
+      initialized = true;
+    },
+    async deployContract() {
+      deployed = true;
+    },
+  };
+
+  try {
+    await assert.rejects(
+      () => deployAndSmoke(client),
+      /does not match GROUNDING_EXPECTED_NETWORK_NAME/,
+    );
+    assert.equal(initialized, false);
+    assert.equal(deployed, false);
+  } finally {
+    for (const name of envNames) {
+      if (previous[name] === undefined) {
+        delete process.env[name];
+      } else {
+        process.env[name] = previous[name];
+      }
+    }
+  }
+});
+
 test("invalid contract inputs fail before any network mutation", async (t) => {
   const envNames = [
     "GROUNDING_EXPECTED_CHAIN_ID",
+    "GROUNDING_EXPECTED_NETWORK_NAME",
     "GROUNDING_ALLOWED_DOMAINS_JSON",
     "GROUNDING_SMOKE_SOURCE_URLS_JSON",
     "GROUNDING_SMOKE_CLAIM",
@@ -317,6 +375,7 @@ test("invalid contract inputs fail before any network mutation", async (t) => {
     for (const invalidCase of cases) {
       await t.test(invalidCase.name, async () => {
         process.env.GROUNDING_EXPECTED_CHAIN_ID = "61999";
+        process.env.GROUNDING_EXPECTED_NETWORK_NAME = "Mock StudioNet";
         process.env.GROUNDING_ALLOWED_DOMAINS_JSON = '["example.com"]';
         process.env.GROUNDING_SMOKE_SOURCE_URLS_JSON =
           '["https://example.com/"]';
@@ -357,6 +416,7 @@ test("invalid contract inputs fail before any network mutation", async (t) => {
 test("deployment output cannot escape approved repository directories", async () => {
   const envNames = [
     "GROUNDING_EXPECTED_CHAIN_ID",
+    "GROUNDING_EXPECTED_NETWORK_NAME",
     "GROUNDING_ALLOWED_DOMAINS_JSON",
     "GROUNDING_SMOKE_SOURCE_URLS_JSON",
     "GROUNDING_SMOKE_CLAIM",
@@ -367,6 +427,7 @@ test("deployment output cannot escape approved repository directories", async ()
     envNames.map((name) => [name, process.env[name]]),
   );
   process.env.GROUNDING_EXPECTED_CHAIN_ID = "61999";
+  process.env.GROUNDING_EXPECTED_NETWORK_NAME = "Mock StudioNet";
   process.env.GROUNDING_ALLOWED_DOMAINS_JSON = '["example.com"]';
   process.env.GROUNDING_SMOKE_SOURCE_URLS_JSON =
     '["https://example.com/"]';
@@ -402,6 +463,7 @@ test("deployment output cannot escape approved repository directories", async ()
 test("an existing deployment record fails before network mutation", async () => {
   const envNames = [
     "GROUNDING_EXPECTED_CHAIN_ID",
+    "GROUNDING_EXPECTED_NETWORK_NAME",
     "GROUNDING_ALLOWED_DOMAINS_JSON",
     "GROUNDING_SMOKE_SOURCE_URLS_JSON",
     "GROUNDING_SMOKE_CLAIM",
@@ -416,6 +478,7 @@ test("an existing deployment record fails before network mutation", async () => 
   writeFileSync(relativeOutput, "{}\n", "utf8");
 
   process.env.GROUNDING_EXPECTED_CHAIN_ID = "61999";
+  process.env.GROUNDING_EXPECTED_NETWORK_NAME = "Mock StudioNet";
   process.env.GROUNDING_ALLOWED_DOMAINS_JSON = '["example.com"]';
   process.env.GROUNDING_SMOKE_SOURCE_URLS_JSON =
     '["https://example.com/"]';

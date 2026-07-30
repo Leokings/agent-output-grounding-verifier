@@ -374,6 +374,7 @@ function currentGitState() {
 
 export default async function deployAndSmoke(client) {
   const expectedChainId = envInteger("GROUNDING_EXPECTED_CHAIN_ID", undefined);
+  const expectedNetworkName = requiredEnv("GROUNDING_EXPECTED_NETWORK_NAME");
   const selectedChainId = Number(client.chain?.id);
   if (
     !Number.isSafeInteger(selectedChainId) ||
@@ -382,6 +383,12 @@ export default async function deployAndSmoke(client) {
     throw new Error(
       `Selected chain ID ${client.chain?.id ?? "unknown"} does not match ` +
         `GROUNDING_EXPECTED_CHAIN_ID ${expectedChainId}`,
+    );
+  }
+  if (client.chain?.name !== expectedNetworkName) {
+    throw new Error(
+      `Selected network ${client.chain?.name ?? "unknown"} does not match ` +
+        `GROUNDING_EXPECTED_NETWORK_NAME ${expectedNetworkName}`,
     );
   }
 

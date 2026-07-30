@@ -64,6 +64,7 @@ genlayer.cmd network set studionet
 genlayer.cmd network info
 
 $env:GROUNDING_EXPECTED_CHAIN_ID='61999'
+$env:GROUNDING_EXPECTED_NETWORK_NAME='Genlayer Studio Network'
 $env:GROUNDING_ALLOWED_DOMAINS_JSON='["example.com"]'
 $env:GROUNDING_SMOKE_SOURCE_URLS_JSON='["https://example.com/"]'
 $env:GROUNDING_SMOKE_CLAIM='This domain is for use in illustrative examples in documents.'
@@ -95,6 +96,7 @@ strongest release record but may take materially longer than `ACCEPTED`.
 
 ```powershell
 $env:GROUNDING_EXPECTED_CHAIN_ID='4221'
+$env:GROUNDING_EXPECTED_NETWORK_NAME='Genlayer Bradbury Testnet'
 $env:GROUNDING_ALLOWED_DOMAINS_JSON='["example.com"]'
 $env:GROUNDING_SMOKE_SOURCE_URLS_JSON='["https://example.com/"]'
 $env:GROUNDING_SMOKE_CLAIM='This domain is for use in illustrative examples in documents.'
@@ -113,6 +115,11 @@ verdict, policy version, configuration, contract SHA-256, and Git state.
 `source_commit` is populated only when the working tree is clean;
 `git_dirty: true` means the recorded `git_commit` is context rather than an
 exact source identifier. Run public release deployments from a clean checkout.
+
+Bradbury and Asimov share chain ID `4221`, so the script also requires the
+exact SDK network name. Before deploying, confirm that `genlayer.cmd network
+info` reports alias `testnet-bradbury`, RPC
+`https://rpc-bradbury.genlayer.com`, and chain ID `4221`.
 
 The optional output must be a new `.json` file under `artifacts/` or
 `deployments/`. Existing files are never overwritten.
