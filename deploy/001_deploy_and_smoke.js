@@ -71,6 +71,27 @@ function requiredEnv(name) {
   return value;
 }
 
+function canonicalRpcUrl(value, label) {
+  let parsed;
+  try {
+    parsed = new URL(value);
+  } catch {
+    throw new Error(`${label} must be a valid HTTPS URL`);
+  }
+  if (
+    parsed.protocol !== "https:" ||
+    parsed.username ||
+    parsed.password ||
+    parsed.search ||
+    parsed.hash
+  ) {
+    throw new Error(
+      `${label} must be an HTTPS URL without credentials, query, or fragment`,
+    );
+  }
+  return parsed.href.replace(/\/$/, "");
+}
+
 function stringArray(name, minimum, maximum, maximumCharacters) {
   const raw = requiredEnv(name);
   if (raw.length > maximumCharacters) {
@@ -391,6 +412,21 @@ export default async function deployAndSmoke(client) {
         `GROUNDING_EXPECTED_NETWORK_NAME ${expectedNetworkName}`,
     );
   }
+  const expectedRpcUrl = canonicalRpcUrl(
+    requiredEnv("GROUNDING_EXPECTED_RPC_URL"),
+    "GROUNDING_EXPECTED_RPC_URL",
+  );
+  const selectedRpcRaw = client.chain?.rpcUrls?.default?.http?.[0];
+  const selectedRpcUrl =
+    typeof selectedRpcRaw === "string"
+      ? canonicalRpcUrl(selectedRpcRaw, "Selected network RPC")
+      : "unknown";
+  if (selectedRpcUrl !== expectedRpcUrl) {
+    throw new Error(
+      `Selected RPC ${selectedRpcUrl} does not match ` +
+        `GROUNDING_EXPECTED_RPC_URL ${expectedRpcUrl}`,
+    );
+  }
 
   const outputPath = deploymentOutputPath();
   const allowedDomains = canonicalDomainArray();
@@ -560,6 +596,7 @@ export default async function deployAndSmoke(client) {
   const result = {
     network: client.chain?.name || "unknown",
     chain_id: client.chain?.id ?? null,
+    rpc_url: selectedRpcUrl,
     explorer: client.chain?.blockExplorers?.default?.url ?? null,
     wait_status: waitStatus,
     git_commit: gitState.commit,

@@ -9,6 +9,21 @@ import deployAndSmoke, {
 const CONTRACT_ADDRESS = "0x1111111111111111111111111111111111111111";
 const DEPLOYMENT_HASH = `0x${"a".repeat(64)}`;
 const VERIFICATION_HASH = `0x${"b".repeat(64)}`;
+const STUDIO_RPC = "https://studio.example/api";
+const BRADBURY_RPC = "https://rpc-bradbury.genlayer.com";
+const ASIMOV_RPC = "https://rpc-asimov.genlayer.com";
+
+function mockChain(id, name, rpcUrl) {
+  return {
+    id,
+    name,
+    rpcUrls: {
+      default: {
+        http: [rpcUrl],
+      },
+    },
+  };
+}
 
 function positiveReceipt(extra = {}) {
   return {
@@ -34,6 +49,7 @@ test("deployment tooling preserves JSON strings and verifies stored state", asyn
   const envNames = [
     "GROUNDING_EXPECTED_CHAIN_ID",
     "GROUNDING_EXPECTED_NETWORK_NAME",
+    "GROUNDING_EXPECTED_RPC_URL",
     "GROUNDING_ALLOWED_DOMAINS_JSON",
     "GROUNDING_SMOKE_SOURCE_URLS_JSON",
     "GROUNDING_SMOKE_CLAIM",
@@ -47,6 +63,7 @@ test("deployment tooling preserves JSON strings and verifies stored state", asyn
 
   process.env.GROUNDING_EXPECTED_CHAIN_ID = "61999";
   process.env.GROUNDING_EXPECTED_NETWORK_NAME = "Mock GenLayer";
+  process.env.GROUNDING_EXPECTED_RPC_URL = STUDIO_RPC;
   process.env.GROUNDING_ALLOWED_DOMAINS_JSON =
     '["STATUS.Example.com","Docs.Example.com"]';
   process.env.GROUNDING_SMOKE_SOURCE_URLS_JSON =
@@ -63,7 +80,7 @@ test("deployment tooling preserves JSON strings and verifies stored state", asyn
   const waits = [];
   const reads = [];
   const client = {
-    chain: { id: 61999, name: "Mock GenLayer" },
+    chain: mockChain(61999, "Mock GenLayer", STUDIO_RPC),
     async initializeConsensusSmartContract() {},
     async deployContract(request) {
       deployRequest = request;
@@ -187,6 +204,7 @@ test("chain mismatch fails before any network mutation", async () => {
   const envNames = [
     "GROUNDING_EXPECTED_CHAIN_ID",
     "GROUNDING_EXPECTED_NETWORK_NAME",
+    "GROUNDING_EXPECTED_RPC_URL",
     "GROUNDING_ALLOWED_DOMAINS_JSON",
     "GROUNDING_SMOKE_SOURCE_URLS_JSON",
     "GROUNDING_SMOKE_CLAIM",
@@ -198,6 +216,7 @@ test("chain mismatch fails before any network mutation", async () => {
   );
   process.env.GROUNDING_EXPECTED_CHAIN_ID = "4221";
   process.env.GROUNDING_EXPECTED_NETWORK_NAME = "Mock Bradbury";
+  process.env.GROUNDING_EXPECTED_RPC_URL = BRADBURY_RPC;
   process.env.GROUNDING_ALLOWED_DOMAINS_JSON = '["example.com"]';
   process.env.GROUNDING_SMOKE_SOURCE_URLS_JSON =
     '["https://example.com/"]';
@@ -208,7 +227,7 @@ test("chain mismatch fails before any network mutation", async () => {
   let initialized = false;
   let deployed = false;
   const client = {
-    chain: { id: 61999, name: "Mock StudioNet" },
+    chain: mockChain(61999, "Mock StudioNet", STUDIO_RPC),
     async initializeConsensusSmartContract() {
       initialized = true;
     },
@@ -239,6 +258,7 @@ test("network mismatch fails before mutation even when chain IDs match", async (
   const envNames = [
     "GROUNDING_EXPECTED_CHAIN_ID",
     "GROUNDING_EXPECTED_NETWORK_NAME",
+    "GROUNDING_EXPECTED_RPC_URL",
     "GROUNDING_ALLOWED_DOMAINS_JSON",
     "GROUNDING_SMOKE_SOURCE_URLS_JSON",
     "GROUNDING_SMOKE_CLAIM",
@@ -251,6 +271,7 @@ test("network mismatch fails before mutation even when chain IDs match", async (
   process.env.GROUNDING_EXPECTED_CHAIN_ID = "4221";
   process.env.GROUNDING_EXPECTED_NETWORK_NAME =
     "Genlayer Bradbury Testnet";
+  process.env.GROUNDING_EXPECTED_RPC_URL = BRADBURY_RPC;
   process.env.GROUNDING_ALLOWED_DOMAINS_JSON = '["example.com"]';
   process.env.GROUNDING_SMOKE_SOURCE_URLS_JSON =
     '["https://example.com/"]';
@@ -261,7 +282,7 @@ test("network mismatch fails before mutation even when chain IDs match", async (
   let initialized = false;
   let deployed = false;
   const client = {
-    chain: { id: 4221, name: "Genlayer Asimov Testnet" },
+    chain: mockChain(4221, "Genlayer Asimov Testnet", ASIMOV_RPC),
     async initializeConsensusSmartContract() {
       initialized = true;
     },
@@ -288,10 +309,66 @@ test("network mismatch fails before mutation even when chain IDs match", async (
   }
 });
 
+test("RPC mismatch fails before mutation when chain metadata matches", async () => {
+  const envNames = [
+    "GROUNDING_EXPECTED_CHAIN_ID",
+    "GROUNDING_EXPECTED_NETWORK_NAME",
+    "GROUNDING_EXPECTED_RPC_URL",
+    "GROUNDING_ALLOWED_DOMAINS_JSON",
+    "GROUNDING_SMOKE_SOURCE_URLS_JSON",
+    "GROUNDING_SMOKE_CLAIM",
+    "GROUNDING_SMOKE_EXPECTED_VERDICT",
+    "GROUNDING_DEPLOYMENT_OUTPUT",
+  ];
+  const previous = Object.fromEntries(
+    envNames.map((name) => [name, process.env[name]]),
+  );
+  process.env.GROUNDING_EXPECTED_CHAIN_ID = "4221";
+  process.env.GROUNDING_EXPECTED_NETWORK_NAME =
+    "Genlayer Bradbury Testnet";
+  process.env.GROUNDING_EXPECTED_RPC_URL = BRADBURY_RPC;
+  process.env.GROUNDING_ALLOWED_DOMAINS_JSON = '["example.com"]';
+  process.env.GROUNDING_SMOKE_SOURCE_URLS_JSON =
+    '["https://example.com/"]';
+  process.env.GROUNDING_SMOKE_CLAIM = "A sufficiently long atomic claim.";
+  process.env.GROUNDING_SMOKE_EXPECTED_VERDICT = "SUPPORTED";
+  delete process.env.GROUNDING_DEPLOYMENT_OUTPUT;
+
+  let initialized = false;
+  let deployed = false;
+  const client = {
+    chain: mockChain(4221, "Genlayer Bradbury Testnet", ASIMOV_RPC),
+    async initializeConsensusSmartContract() {
+      initialized = true;
+    },
+    async deployContract() {
+      deployed = true;
+    },
+  };
+
+  try {
+    await assert.rejects(
+      () => deployAndSmoke(client),
+      /does not match GROUNDING_EXPECTED_RPC_URL/,
+    );
+    assert.equal(initialized, false);
+    assert.equal(deployed, false);
+  } finally {
+    for (const name of envNames) {
+      if (previous[name] === undefined) {
+        delete process.env[name];
+      } else {
+        process.env[name] = previous[name];
+      }
+    }
+  }
+});
+
 test("invalid contract inputs fail before any network mutation", async (t) => {
   const envNames = [
     "GROUNDING_EXPECTED_CHAIN_ID",
     "GROUNDING_EXPECTED_NETWORK_NAME",
+    "GROUNDING_EXPECTED_RPC_URL",
     "GROUNDING_ALLOWED_DOMAINS_JSON",
     "GROUNDING_SMOKE_SOURCE_URLS_JSON",
     "GROUNDING_SMOKE_CLAIM",
@@ -376,6 +453,7 @@ test("invalid contract inputs fail before any network mutation", async (t) => {
       await t.test(invalidCase.name, async () => {
         process.env.GROUNDING_EXPECTED_CHAIN_ID = "61999";
         process.env.GROUNDING_EXPECTED_NETWORK_NAME = "Mock StudioNet";
+        process.env.GROUNDING_EXPECTED_RPC_URL = STUDIO_RPC;
         process.env.GROUNDING_ALLOWED_DOMAINS_JSON = '["example.com"]';
         process.env.GROUNDING_SMOKE_SOURCE_URLS_JSON =
           '["https://example.com/"]';
@@ -388,7 +466,7 @@ test("invalid contract inputs fail before any network mutation", async (t) => {
         let initialized = false;
         let deployed = false;
         const client = {
-          chain: { id: 61999, name: "Mock StudioNet" },
+          chain: mockChain(61999, "Mock StudioNet", STUDIO_RPC),
           async initializeConsensusSmartContract() {
             initialized = true;
           },
@@ -417,6 +495,7 @@ test("deployment output cannot escape approved repository directories", async ()
   const envNames = [
     "GROUNDING_EXPECTED_CHAIN_ID",
     "GROUNDING_EXPECTED_NETWORK_NAME",
+    "GROUNDING_EXPECTED_RPC_URL",
     "GROUNDING_ALLOWED_DOMAINS_JSON",
     "GROUNDING_SMOKE_SOURCE_URLS_JSON",
     "GROUNDING_SMOKE_CLAIM",
@@ -428,6 +507,7 @@ test("deployment output cannot escape approved repository directories", async ()
   );
   process.env.GROUNDING_EXPECTED_CHAIN_ID = "61999";
   process.env.GROUNDING_EXPECTED_NETWORK_NAME = "Mock StudioNet";
+  process.env.GROUNDING_EXPECTED_RPC_URL = STUDIO_RPC;
   process.env.GROUNDING_ALLOWED_DOMAINS_JSON = '["example.com"]';
   process.env.GROUNDING_SMOKE_SOURCE_URLS_JSON =
     '["https://example.com/"]';
@@ -437,7 +517,7 @@ test("deployment output cannot escape approved repository directories", async ()
 
   let initialized = false;
   const client = {
-    chain: { id: 61999, name: "Mock StudioNet" },
+    chain: mockChain(61999, "Mock StudioNet", STUDIO_RPC),
     async initializeConsensusSmartContract() {
       initialized = true;
     },
@@ -464,6 +544,7 @@ test("an existing deployment record fails before network mutation", async () => 
   const envNames = [
     "GROUNDING_EXPECTED_CHAIN_ID",
     "GROUNDING_EXPECTED_NETWORK_NAME",
+    "GROUNDING_EXPECTED_RPC_URL",
     "GROUNDING_ALLOWED_DOMAINS_JSON",
     "GROUNDING_SMOKE_SOURCE_URLS_JSON",
     "GROUNDING_SMOKE_CLAIM",
@@ -479,6 +560,7 @@ test("an existing deployment record fails before network mutation", async () => 
 
   process.env.GROUNDING_EXPECTED_CHAIN_ID = "61999";
   process.env.GROUNDING_EXPECTED_NETWORK_NAME = "Mock StudioNet";
+  process.env.GROUNDING_EXPECTED_RPC_URL = STUDIO_RPC;
   process.env.GROUNDING_ALLOWED_DOMAINS_JSON = '["example.com"]';
   process.env.GROUNDING_SMOKE_SOURCE_URLS_JSON =
     '["https://example.com/"]';
@@ -488,7 +570,7 @@ test("an existing deployment record fails before network mutation", async () => 
 
   let initialized = false;
   const client = {
-    chain: { id: 61999, name: "Mock StudioNet" },
+    chain: mockChain(61999, "Mock StudioNet", STUDIO_RPC),
     async initializeConsensusSmartContract() {
       initialized = true;
     },

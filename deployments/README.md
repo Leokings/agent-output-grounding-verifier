@@ -5,7 +5,7 @@ There is no canonical public deployment recorded yet.
 Do not trust an address merely because it is mentioned in an issue, pull
 request, or third-party interface. A release deployment record should include:
 
-- Network name and chain ID.
+- Network name, chain ID, and exact RPC URL.
 - Contract address.
 - Deployment transaction hash.
 - Verification smoke-test transaction hash.

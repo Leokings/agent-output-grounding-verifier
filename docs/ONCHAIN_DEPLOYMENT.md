@@ -24,8 +24,9 @@ release, reads `get_policy`, submits a known claim, and checks the stored
 verification record.
 
 The script has no mutating defaults. It requires an explicit expected chain ID,
-allowlist, source list, claim, and expected verdict. It refuses to submit a
-transaction when the selected CLI network has a different chain ID.
+network name, RPC URL, allowlist, source list, claim, and expected verdict. It
+refuses to submit a transaction when any selected network identity field
+differs.
 
 ## Prerequisites
 
@@ -65,6 +66,7 @@ genlayer.cmd network info
 
 $env:GROUNDING_EXPECTED_CHAIN_ID='61999'
 $env:GROUNDING_EXPECTED_NETWORK_NAME='Genlayer Studio Network'
+$env:GROUNDING_EXPECTED_RPC_URL='https://studio.genlayer.com/api'
 $env:GROUNDING_ALLOWED_DOMAINS_JSON='["example.com"]'
 $env:GROUNDING_SMOKE_SOURCE_URLS_JSON='["https://example.com/"]'
 $env:GROUNDING_SMOKE_CLAIM='This domain is for use in illustrative examples in documents.'
@@ -97,6 +99,7 @@ strongest release record but may take materially longer than `ACCEPTED`.
 ```powershell
 $env:GROUNDING_EXPECTED_CHAIN_ID='4221'
 $env:GROUNDING_EXPECTED_NETWORK_NAME='Genlayer Bradbury Testnet'
+$env:GROUNDING_EXPECTED_RPC_URL='https://rpc-bradbury.genlayer.com'
 $env:GROUNDING_ALLOWED_DOMAINS_JSON='["example.com"]'
 $env:GROUNDING_SMOKE_SOURCE_URLS_JSON='["https://example.com/"]'
 $env:GROUNDING_SMOKE_CLAIM='This domain is for use in illustrative examples in documents.'
@@ -117,9 +120,11 @@ verdict, policy version, configuration, contract SHA-256, and Git state.
 exact source identifier. Run public release deployments from a clean checkout.
 
 Bradbury and Asimov share chain ID `4221`, so the script also requires the
-exact SDK network name. Before deploying, confirm that `genlayer.cmd network
-info` reports alias `testnet-bradbury`, RPC
-`https://rpc-bradbury.genlayer.com`, and chain ID `4221`.
+exact SDK network name and RPC URL. This prevents a `--rpc` override from
+silently changing the target while retaining Bradbury's chain metadata. Before
+deploying, confirm that `genlayer.cmd network info` reports alias
+`testnet-bradbury`, RPC `https://rpc-bradbury.genlayer.com`, and chain ID
+`4221`.
 
 The optional output must be a new `.json` file under `artifacts/` or
 `deployments/`. Existing files are never overwritten.

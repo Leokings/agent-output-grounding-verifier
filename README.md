@@ -104,9 +104,9 @@ publishers and focused endpoints whose redirect behavior you trust.
 For StudioNet and Bradbury, use the bundled
 [`deploy/001_deploy_and_smoke.js`](deploy/001_deploy_and_smoke.js) workflow.
 It preserves the constructor's JSON-as-string ABI value, verifies deployment
-execution and positive consensus, requires an explicit chain ID, compares the
-deployed source and schema with the local release, submits a known grounded
-claim, and checks the request-bound stored record. See
+execution and positive consensus, requires explicit chain, network-name, and
+RPC identity, compares the deployed source and schema with the local release,
+submits a known grounded claim, and checks the request-bound stored record. See
 [`docs/ONCHAIN_DEPLOYMENT.md`](docs/ONCHAIN_DEPLOYMENT.md) for the complete
 PowerShell procedure.
 
