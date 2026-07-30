@@ -1,8 +1,9 @@
 {
   "record_version": "1",
   "recorded_at": "2026-07-30T17:59:06.6512847Z",
-  "provisional": true,
-  "status": "ACCEPTED",
+  "provisional": false,
+  "status": "FINALIZED",
+  "finalized_verified_at": "2026-07-30T18:33:21Z",
   "network": {
     "name": "GenLayer Bradbury Testnet",
     "alias": "testnet-bradbury",
@@ -35,7 +36,7 @@
     "genlayer_transaction": "0xfef6e10039fbf21ee3cc16d0b376d1f3d41ee8a41e66066c3439aa2c2561ee37",
     "evm_transaction": "0xd8148b154744360a74686c1c659f97d5432fe37a77223816486dc6d4f7c549e2",
     "evm_block": "0xf4dfd6",
-    "status": "ACCEPTED",
+    "status": "FINALIZED",
     "result": "AGREE",
     "execution_result": "FINISHED_WITH_RETURN",
     "validator_summary": {
@@ -50,7 +51,7 @@
     "genlayer_transaction": "0x7e72eb0d3673b4e7fde739437c21931009751dc9b3129b3921285b5ad8ed00ba",
     "evm_transaction": "0xe681d713a0f5177d601583ac73a19107b19671a070f8596459c068bbfd30aab1",
     "evm_block": "0xf4e137",
-    "status": "ACCEPTED",
+    "status": "FINALIZED",
     "result": "AGREE",
     "execution_result": "FINISHED_WITH_RETURN",
     "validator_summary": {
@@ -72,7 +73,11 @@
   "state_verification": {
     "initial_verification_count": 0,
     "final_verification_count": 1,
-    "verification_read_back": true
+    "verification_read_back": true,
+    "finalized_state_read_back": true,
+    "finalized_code_match": true,
+    "finalized_code_bytes": 47033,
+    "finalized_code_sha256": "9edcde9acd1f9206a9bd4ef4b9f491a4d39ece605597c109f3172ba7916c2d33"
   },
-  "finality_note": "ACCEPTED is provisional during GenLayer's appeal window. Re-check both GenLayer transaction statuses before treating this record as finalized."
+  "finality_note": "Both GenLayer transactions reported FINALIZED (status code 7), both receipts retained AGREE consensus and FINISHED_WITH_RETURN execution, and the contract code and verification record were independently read from latest-final state."
 }

@@ -5,11 +5,10 @@
 The current public testnet record is
 [`bradbury-2026-07-30.json`](bradbury-2026-07-30.json).
 
-At publication time, both the deployment and smoke-test transactions were
-`ACCEPTED` by GenLayer consensus and still inside their appeal windows. The
-record is therefore explicitly marked `"provisional": true`. Re-check both
-GenLayer transaction statuses before relying on the deployment as finalized,
-then publish a new record or an auditable status update.
+Both the deployment and smoke-test transactions are `FINALIZED`. The record is
+marked `"provisional": false` and includes the finalized-state verification
+timestamp, exact deployed-code digest, consensus outcome, execution result, and
+request-bound smoke-test record.
 
 Do not trust an address merely because it is mentioned in an issue, pull
 request, or third-party interface. A release deployment record should include:
