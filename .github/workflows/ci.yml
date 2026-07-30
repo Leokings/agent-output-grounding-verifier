@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Python dependencies
+        run: python -m pip install --upgrade pip && python -m pip install -r requirements.txt
+
+      - name: Validate the Intelligent Contract
+        run: genvm-lint check contracts/AgentOutputGroundingVerifier.py --json
+
+      - name: Type-check the Intelligent Contract
+        run: genvm-lint typecheck contracts/AgentOutputGroundingVerifier.py --json
+
+      - name: Run direct-mode tests
+        run: python -m pytest tests/direct -v -p no:cacheprovider
+
+      - name: Validate semantic fixtures
+        run: python -m json.tool tests/semantic/golden_cases.json > /dev/null
+
+      - name: Test deployment tooling
+        run: npm run check:deploy && npm run test:deploy

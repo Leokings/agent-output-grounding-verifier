@@ -1,0 +1,19 @@
+{
+  "name": "agent-output-grounding-verifier",
+  "version": "1.0.0",
+  "description": "Reusable GenLayer intelligent contract for grounding agent claims in public web evidence.",
+  "type": "module",
+  "license": "MIT",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Leokings/agent-output-grounding-verifier.git"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "check:deploy": "node --check deploy/001_deploy_and_smoke.js",
+    "test:deploy": "node --test tests/tooling/deploy-script.test.mjs"
+  }
+}
